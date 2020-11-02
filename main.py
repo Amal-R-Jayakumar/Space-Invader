@@ -1,11 +1,9 @@
 import pygame
 import random
 import math
-
+from pygame import mixer
 # initialize pygame
 pygame.init()
-
-
 
 #   VARIABLES
 #   Screen
@@ -41,10 +39,18 @@ font = pygame.font.Font('freesansbold.ttf', 32)
 textX = 10
 textY = 10
 
+# Game Over Text
+game_over_font = pygame.font.Font('freesansbold.ttf', 64)
+
 
 def show_score(x, y):
     score = font.render("Score: "+str(score_value), True, (255, 255, 255))
     screen.blit(score, (x, y))
+
+
+def game_over_text():
+    game_over = game_over_font.render("GAME OVER", True, (255, 255, 255))
+    screen.blit(game_over, (200, 250))
 
 
 # create the  screeen with 800x600 px resolution
@@ -52,6 +58,11 @@ screen = pygame.display.set_mode((width, height))
 
 #   Background
 background = pygame.image.load("assets/background.png")
+
+# Music
+mixer.music.load('assets/background.wav')
+mixer.music.play(-1)
+
 
 #Title and Icon
 pygame.display.set_caption("Space Invader")
@@ -120,11 +131,12 @@ while game_is_running:
                 change_to_playerX_position = 6
             if event.key == pygame.K_SPACE:
                 if bullet_state is 'ready':
-
+                    bullet_sound = mixer.Sound("assets/laser.wav")
+                    bullet_sound.play()
                     # Get the current X- Coordinate of the bullet
-
                     bulletX = playerX
                     fire_bullet(bulletX, bulletY)
+
         if event.type == pygame.KEYUP:
             if event.type == pygame.KEYUP or event.type == pygame.KEYUP:
                 change_to_playerX_position = 0
@@ -142,6 +154,14 @@ while game_is_running:
 ############################################
 #   Enemy movement and boundarry restriction
     for enemy_list_var in range(num_of_enimies):
+
+        # GAME OVER text
+        if enemyY[enemy_list_var] > 440:
+            for j in range(num_of_enimies):
+                enemyY[j] == 2000
+            game_over_text()
+            break
+            
         enemyX[enemy_list_var] += change_to_enemyX_position[enemy_list_var]
         if enemyX[enemy_list_var] <= 0:
             change_to_enemyX_position[enemy_list_var] = 5
@@ -152,7 +172,10 @@ while game_is_running:
 
         collision = isCollition(enemyX[enemy_list_var], enemyY[enemy_list_var],
                                 bulletX, bulletY)
+        #   Explosion
         if collision:
+            collision_sound = mixer.Sound("assets/explosion.wav")
+            collision_sound.play()
             bulletY = 480
             bullet_state = "ready"
             score_value += 1
